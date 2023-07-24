@@ -1,0 +1,80 @@
+news_sites:
+  compras:
+    url: "https://my.api.mockaroo.com/compras.json?key=196dfc30"
+    queries:
+      homepage_article_links: ".event-cards"
+      article_body: ".sc.pl-3"
+      article_title: ".title"
+  inventario:
+    url: "https://my.api.mockaroo.com/inventario.json?key=196dfc30"
+    queries:
+      homepage_article_links: ".news__title a"
+      article_body: ".newsfull--body"
+      article_title: ".newsfull__title"
+  materias_primas:
+    url: "https://my.api.mockaroo.com/materias_primas.json?key=196dfc30"
+    queries:
+      homepage_article_links: ".titulo a"
+      article_body: ".article-content--cuerpo"
+      article_title: ".titulo"
+  merma:
+    url: "https://my.api.mockaroo.com/merma.json?key=196dfc30"
+    queries:
+      homepage_article_links: ".c_t a"
+      article_body: ".a_c"
+      article_title: ".a_t"
+  pedidos:
+    url: "https://my.api.mockaroo.com/pedidos.json?key=196dfc30"
+    queries:
+      homepage_article_links: ".c_t a"
+      article_body: ".a_c"
+      article_title: ".a_t"
+  pedidos_productos:
+    url: "https://my.api.mockaroo.com/pedidos_productos.json?key=196dfc30"
+    queries:
+      homepage_article_links: ".c_t a"
+      article_body: ".a_c"
+      article_title: ".a_t"
+  productos:
+    url: "https://my.api.mockaroo.com/productos.json?key=196dfc30"
+    queries:
+      homepage_article_links: ".c_t a"
+      article_body: ".a_c"
+      article_title: ".a_t"
+  proveedores:
+    url: "https://my.api.mockaroo.com/proveedores.json?key=196dfc30"
+    queries:
+      homepage_article_links: ".c_t a"
+      article_body: ".a_c"
+      article_title: ".a_t"
+  receta:
+    url: "https://my.api.mockaroo.com/receta.json?key=196dfc30"
+    queries:
+      homepage_article_links: ".c_t a"
+      article_body: ".a_c"
+      article_title: ".a_t"
+  role:
+    url: "https://my.api.mockaroo.com/role.json?key=196dfc30"
+    queries:
+      homepage_article_links: ".c_t a"
+      article_body: ".a_c"
+      article_title: ".a_t"
+  user:
+    url: "https://my.api.mockaroo.com/user.json?key=196dfc30"
+    queries:
+      homepage_article_links: ".c_t a"
+      article_body: ".a_c"
+      article_title: ".a_t"
+  user_roles:
+    url: "https://my.api.mockaroo.com/user_roles.json?key=196dfc30"
+    queries:
+      homepage_article_links: ".c_t a"
+      article_body: ".a_c"
+      article_title: ".a_t"
+  ventas:
+    url: "https://my.api.mockaroo.com/ventas.json?key=196dfc30"
+    queries:
+      homepage_article_links: ".c_t a"
+      article_body: ".a_c"
+      article_title: ".a_t"
+  
