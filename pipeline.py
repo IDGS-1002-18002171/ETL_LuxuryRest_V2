@@ -1,60 +1,72 @@
-import datetime
 import subprocess
 import logging
+import json
 
-#Agregamos la configuracion basica del logging
+# Agregamos la configuración básica del logging
 logging.basicConfig(level=logging.INFO)
-logger=logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-#Definimos una lista con los diferentes sites uids. 
-news_sites_uids=['productos','merma']
+# Definimos una lista con los diferentes sites uids.
+news_sites_uids = ['productos', 'merma']
 
-#Funcion principal que ejecuta las etapas paso a paso
+# Función para actualizar el progreso en el archivo JSON
+def update_progress(progress):
+    with open('progress.json', 'r+') as f:
+        data = json.load(f)
+        data['progress'] = progress
+        f.seek(0)  # Mover el puntero al inicio del archivo
+        json.dump(data, f)
+        f.truncate()  # Truncar el archivo para eliminar cualquier contenido restante
+
+# Función principal que ejecuta las etapas paso a paso
 def main():
+    progress = {'progress': 0, 'status': 'En progreso'}
+    with open('progress.json', 'w') as f:
+        json.dump(progress, f)
+    subprocess.run(['del', 'newspaper.db'], shell=True, cwd='./load')
     _extract()
     _transform()
     _load()
+
     logger.info('...::Proceso ETL Finalizado::...')
 
-#Funcion encargada de invocar el proceso de extraccion
+# Función encargada de invocar el proceso de extracción
 def _extract():
-    logger.info('...::Iniciando el Proceso de Extraccion::...')
+    logger.info('...::Iniciando el Proceso de Extracción::...')
 
-    #Iteramos por cada uno de los newssites que tenemos en la configuracion.
     for news_sites_uid in news_sites_uids:
-        #Ejecutamos la etapa de extraccion en la carpeta /extract
-        subprocess.run(['python','main.py',news_sites_uid], cwd='./extract')
+        subprocess.run(['python', 'main.py', news_sites_uid], cwd='./extract')
+        
+    subprocess.run(['move', r'extract\*.csv', r'transform'], shell=True)
 
-        #Movemos el archivo .csv a la carpeta / en modo seguro
-    subprocess.run(['move',r'extract\*.csv',r'transform'],shell=True)
+    # Actualizamos el progreso después de la etapa de extracción
+    update_progress(25)
 
-#Funcion encargada de invocar el proceso de transformacion
+# Función encargada de invocar el proceso de transformación
 def _transform():
-    logger.info('...::Iniciando el Proceso de Transformacion::...')
+    logger.info('...::Iniciando el Proceso de Transformación::...')
 
-    #Iteramos por cada uno de los newssites que tenemos en la configuracion.
     for news_sites_uid in news_sites_uids:
         dirty_data_filename = '{}.csv'.format(news_sites_uid)
+        subprocess.run(['python', 'main.py', dirty_data_filename], cwd='./transform')
+        subprocess.run(['del', dirty_data_filename], shell=True, cwd='./transform')
 
-        #Ejecutamos la etapa de transformacion en la carpeta /extract
-        subprocess.run(['python','main.py',dirty_data_filename], cwd='./transform')
-        #Eliminamos el archivo .csv sucio
-        subprocess.run(['del',dirty_data_filename],shell=True,cwd='./transform')
-        #Movemos el archivo .csv limpio a la carpeta load.
-    subprocess.run(['move',r'transform\*.csv',r'load'],shell=True)
+    subprocess.run(['move', r'transform\*.csv', r'load'], shell=True)
 
-#Funcion encargada de invocar el proceso de carga
+    # Actualizamos el progreso después de la etapa de transformación
+    update_progress(50)
+
+# Función encargada de invocar el proceso de carga
 def _load():
     logger.info('...::Iniciando el Proceso de Carga::...')
 
-    #Iteramos por cada uno de los newssites que tenemos en la configuracion.
     for news_sites_uid in news_sites_uids:
         clean_data_filename = 'clean_{}.csv'.format(news_sites_uid)
+        subprocess.run(['python', 'main.py', clean_data_filename], cwd='./load')
+        subprocess.run(['del', clean_data_filename], shell=True, cwd='./load')
 
-        #Ejecutamos la etapa de carga en la carpeta /load
-        subprocess.run(['python','main.py',clean_data_filename], cwd='./load')
-        #Eliminamos el archivo .csv limpio
-        subprocess.run(['del',clean_data_filename],shell=True,cwd='./load')
+    # Actualizamos el progreso después de la etapa de carga
+    update_progress(100)
 
 if __name__ == '__main__':
     main()
