@@ -1,9 +1,11 @@
 import os
 import subprocess
 import logging
-import json  # Import the json module
+import json
+import sqlite3
 
 from flask import Flask, render_template, jsonify
+
 
 app = Flask(__name__)
 
@@ -11,10 +13,6 @@ app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Definimos una lista con los diferentes sites uids.
-news_sites_uids = ['productos', 'merma']
-
-# Ruta principal que muestra la interfaz visual con el botón para iniciar el proceso
 @app.route('/')
 def index():
     return render_template('index.html')

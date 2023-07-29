@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer, DateTime, DECIMAL, ForeignKey, Date, Float, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
-from base import Base
+from load.base import Base
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -115,7 +115,7 @@ class Materias_Primas(Base):
     nombre = Column(String(50), nullable=False)
     unidad_medida = Column(String(20), nullable=False)
     cantidad_minima_requerida = Column(DECIMAL(10, 2), nullable=False)
-    precio_compra = Column(DECIMAL(10, 2), nullable=False)
+    precio_compra = Column(Float, nullable=False)
 
     # Definimos la relación con la tabla Proveedores
     proveedor = relationship("Proveedores")
@@ -152,7 +152,7 @@ class Ventas(Base):
     # Definicion de Columnas
     id_venta = Column(Integer, primary_key=True)
     id_usuario = Column(Integer, ForeignKey('user.id'), nullable=False)
-    precio_total = Column(DECIMAL(10, 2), nullable=False)
+    precio_total = Column(Float, nullable=False)
     fecha_hora_venta = Column(DateTime, nullable=False)
 
     # Definimos la relación con la tabla User
