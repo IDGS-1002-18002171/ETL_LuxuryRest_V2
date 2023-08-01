@@ -7,8 +7,7 @@ import dash
 from dash import dcc, html,State
 from dash.dependencies import Input, Output
 from sqlalchemy import create_engine
-from load.clases import Ventas,PedidosProductos,Pedidos,Productos,Compras,Materias_Primas,Inventario
-from load.base import Base, engine, Session
+from clases import Ventas,PedidosProductos,Pedidos,Productos,Compras,Materias_Primas,Inventario
 from sqlalchemy import func
 from datetime import datetime, timedelta
 import plotly.express as px
@@ -16,6 +15,15 @@ from sqlalchemy.orm import aliased
 import json
 import warnings
 from sqlalchemy.exc import SAWarning
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+#Declaramos el motor de base de datos a usar.
+engine=create_engine('sqlite:///load/LuxuryRestETL.db')
+Session=sessionmaker(bind=engine)
+
+Base=declarative_base()
 
 warnings.filterwarnings('ignore', category=SAWarning)
 
@@ -570,6 +578,11 @@ def update_graph(daily_clicks, monthly_clicks, toggle_clicks, n_clicks, data, st
 @dash_app.server.route('/dash/')
 def render_dashboard():
     return dash_app.index()
+
+# Route to render the front-end HTML layout
+@app.route('/')
+def dashboard():
+    return render_template('dashboard.html')
 
 # Iniciar la aplicación Flask
 if __name__ == '__main__':

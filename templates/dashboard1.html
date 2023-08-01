@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard de Compras y Ventas mediante período personalizado</title>
+</head>
+<body>
+    <h1>Dashboard de Compras y Ventas mediante período personalizado</h1>
+
+    <!-- Date Picker para seleccionar el rango de fechas -->
+    <button id="view-toggle-button" type="button">Cambiar a Compras</button>
+    <input id="date-picker" type="date" style="margin-bottom: 20px;" value="" />
+
+    <!-- Buttons for daily and monthly view -->
+    <div style="margin-bottom: 20px;">
+        <button id="update-button" type="button" style="margin-top: 20px;">Update Graph</button>
+        <button id="daily-button" type="button" style="margin-right: 10px;">Vista Diaria</button>
+        <button id="monthly-button" type="button" style="margin-right: 10px;">Vista Mensual</button>
+    </div>
+
+    <!-- Bar chart -->
+    <div>
+        <div id="bar-graph"></div>
+    </div>
+
+    <!-- Pie chart -->
+    <div>
+        <div id="pie-chart"></div>
+    </div>
+
+    <!-- Nueva gráfica para mostrar la valoración actual de los productos -->
+    <div>
+        <div id="valoracion-graphic"></div>
+    </div>
+
+    <!-- Hidden input for dummy data -->
+    <input id="dummy" type="hidden" />
+
+    <!-- Ventas section (hidden) -->
+    <div id="ventas-section" style="display: none;">
+        <!-- Graphs for each capacidad_almacen -->
+        <!-- Add as many graphs as the length of capacidad_almacen -->
+    </div>
+
+    <!-- Materia prima section (hidden) -->
+    <div id="materia-prima-section" style="display: none;">
+        <!-- Graphs for each cantidad_materia_prima_actual -->
+        <!-- Add as many graphs as the length of cantidad_materia_prima_actual -->
+    </div>
+</body>
+</html>

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer, DateTime, DECIMAL, ForeignKey, Date, Float, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
-from base import Base
+from load.base import Base
 from sqlalchemy.ext.declarative import declarative_base
 
 
