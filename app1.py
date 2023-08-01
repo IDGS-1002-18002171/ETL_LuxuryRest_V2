@@ -326,7 +326,7 @@ def generate_gauge_graph(producto, stock_actual):
     ))
 
     # Set the title of the gauge graph
-    gauge_graph.update_layout(title_text=f'{producto} - Stock Actual: {stock_actual}')
+    gauge_graph.update_layout(title_text=f'{producto} - Stock Actual: {stock_actual}', width=400, height=300)
 
     return gauge_graph
 
@@ -348,7 +348,7 @@ def generate_gauge_graph1(producto, stock_actual):
     ))
 
     # Set the title of the gauge graph
-    gauge_graph.update_layout(title_text=f'{producto} - Stock Actual: {stock_actual}')
+    gauge_graph.update_layout(title_text=f'{producto} - Inventario Actual: {stock_actual}', width=400, height=300)
 
     return gauge_graph
 
@@ -396,17 +396,35 @@ layout_elements.extend([html.Div([
     ]),
     dcc.Input(id='dummy', style={'display': 'none'}),
     ])
-layout_elements.extend([
-    html.Div(id='ventas-section', style={'display': 'none'}, children=[
-        dcc.Graph(id=f'stock-graphic-{i+1}')
-        for i in range(len(capacidad_almacen))
-    ]),
-    # Second section (materia prima)
-    html.Div(id='materia-prima-section', style={'display': 'none'}, children=[
-        dcc.Graph(id=f'almacen-graphic-{i+1}')
-        for i in range(len(cantidad_materia_prima_actual))
-    ]),
-    ])
+# Antes del layout_elements.extend, define un nuevo div contenedor que utilizará el estilo 'display: flex'
+ventas_materia_prima_container = html.Div(
+    style={'display': 'flex', 'flex-wrap': 'wrap'}
+)
+
+# Luego, agrega las gráficas de ventas (stock-graphic) al contenedor ventas_materia_prima_container
+ventas_materia_prima_container_children = [
+    dcc.Graph(id=f'stock-graphic-{i+1}')
+    for i in range(len(capacidad_almacen))
+]
+ventas_materia_prima_container.children = ventas_materia_prima_container_children
+
+# Agrega el contenedor de ventas (stock-graphic) al layout_elements
+layout_elements.append(html.Div(id='ventas-section', style={'display': 'none'}, children=ventas_materia_prima_container))
+
+# Después, agrega un nuevo div contenedor para las gráficas de materia prima (almacen-graphic)
+materia_prima_container = html.Div(
+    style={'display': 'flex', 'flex-wrap': 'wrap'}
+)
+
+# Agrega las gráficas de materia prima (almacen-graphic) al contenedor materia_prima_container
+materia_prima_container_children = [
+    dcc.Graph(id=f'almacen-graphic-{i+1}')
+    for i in range(len(cantidad_materia_prima_actual))
+]
+materia_prima_container.children = materia_prima_container_children
+
+# Agrega el contenedor de materia prima (almacen-graphic) al layout_elements
+layout_elements.append(html.Div(id='materia-prima-section', style={'display': 'none'}, children=materia_prima_container))
 # Finalmente, asignar el layout a la app
 dash_app.layout = html.Div(layout_elements)
 # Callback para el botón "Vista Diaria"
