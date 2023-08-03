@@ -79,7 +79,8 @@ def main(filename):
                         row['nombre_contacto'],
                         row['correo_electronico'],
                         row['telefono'],
-                        row['direccion'],)  
+                        row['direccion'],
+                        row['Active'],)  
             session.add(proveedor)
             session.commit()
             session.close()
@@ -91,7 +92,8 @@ def main(filename):
                         row['nombre'],
                         row['unidad_medida'],
                         row['cantidad_minima_requerida'],
-                        row['precio_compra'],)  
+                        row['precio_compra'],
+                        row['Active'],)  
             session.add(materia_prima)
             session.commit()
             session.close()
@@ -129,7 +131,6 @@ def main(filename):
                         fecha_hora_pedido,
                         row['domicilio'],
                         row['empleado'],
-                        row['repartidor'],
                         fecha_hora_entrega)  
             session.add(pedido)
             session.commit()

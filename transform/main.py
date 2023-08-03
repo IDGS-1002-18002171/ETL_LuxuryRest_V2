@@ -32,11 +32,18 @@ def main(file_name):
     #Invocamos a la fucnión para remover los caracteres \n \r
     df = _remove_scape_characters_from_body(df)
     #Invocamos a la función para enriquecer el df agregando una columna con los tokens del title y el body.
-    df = _data_enrichment(df)
-    #Invocamos a la función para eliminar registros duplicados con base al título
-    df = _remove_duplicate_entries(df, 'title')
+    df = _data_enrichment(df)"""
+    # Invocamos a la función para eliminar registros duplicados con base en el título
+    try:
+        df = _remove_duplicate_entries(df, 'nombre')
+    except Exception as e:
+        print(e)
+    try:
+        df = _remove_duplicate_columns(df, 'id_pedido','id_producto')
+    except Exception as e:
+        print(e)
     #Invocamos a la función para eliminar registros con valores faltantes
-    df = drop_rows_with_missing_values(df) """
+    """df = drop_rows_with_missing_values(df) """
     #Invocamos a la función para guardar el df un archivo csv.
     _save_data_to_csv(df, file_name)
     
@@ -133,6 +140,22 @@ def _get_main_tokens(df, column):
 def _remove_duplicate_entries(df, column):
     logger.info(f'Eliminando entradas duplicadas en la columna {column}')
     df.drop_duplicates(subset=[column], inplace=True)
+    return df
+##################################################################################
+# Función que quita entradas duplicadas del df con el mismo valor en dos columna #
+##################################################################################
+def _remove_duplicate_columns(df, column1, column2):
+    logger.info(f'Eliminando filas duplicadas entre las columnas {column1} y {column2}')
+    
+    # Creamos una columna temporal que concatena los valores de column1 y column2
+    df['concatenated'] = df[column1].astype(str) + df[column2].astype(str)
+    
+    # Eliminamos las filas duplicadas basadas en la columna concatenada
+    df.drop_duplicates(subset=['concatenated'], inplace=True)
+    
+    # Eliminamos la columna temporal
+    df.drop(columns=['concatenated'], inplace=True)
+    
     return df
 ##################################################################################
 # Función que elimina registros con valores faltantes (si es que aún los hay) #

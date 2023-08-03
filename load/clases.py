@@ -97,13 +97,15 @@ class Proveedores(Base):
     correo_electronico = Column(String(50), nullable=False)
     telefono = Column(String(20), nullable=False)
     direccion = Column(String(255), nullable=False)
+    Active = Column(Integer, nullable=False)
 
-    def __init__(self, nombre_empresa, nombre_contacto, correo_electronico, telefono, direccion):
+    def __init__(self, nombre_empresa, nombre_contacto, correo_electronico, telefono, direccion, Active):
         self.nombre_empresa = nombre_empresa
         self.nombre_contacto = nombre_contacto
         self.correo_electronico = correo_electronico
         self.telefono = telefono
         self.direccion = direccion
+        self.Active = Active
 
 # Definimos la clase Materias_Primas que define la entidad de BD
 class Materias_Primas(Base):
@@ -116,16 +118,18 @@ class Materias_Primas(Base):
     unidad_medida = Column(String(20), nullable=False)
     cantidad_minima_requerida = Column(DECIMAL(10, 2), nullable=False)
     precio_compra = Column(Float, nullable=False)
+    Active = Column(Integer, nullable=False)
 
     # Definimos la relación con la tabla Proveedores
     proveedor = relationship("Proveedores")
 
-    def __init__(self, id_proveedor, nombre, unidad_medida, cantidad_minima_requerida, precio_compra):
+    def __init__(self, id_proveedor, nombre, unidad_medida, cantidad_minima_requerida, precio_compra, Active):
         self.id_proveedor = id_proveedor
         self.nombre = nombre
         self.unidad_medida = unidad_medida
         self.cantidad_minima_requerida = cantidad_minima_requerida
         self.precio_compra = precio_compra
+        self.Active = Active
 
 # Definimos la clase Receta que define la entidad de BD
 class Receta(Base):
@@ -175,24 +179,21 @@ class Pedidos(Base):
     fecha_hora_pedido = Column(DateTime, nullable=False)
     domicilio = Column(String(70))
     empleado = Column(Integer, ForeignKey('user.id'))
-    repartidor = Column(Integer, ForeignKey('user.id'))
     fecha_hora_entrega = Column(DateTime)
 
     # Definimos las relaciones con la tabla User
     user_empleado = relationship("User", foreign_keys=[empleado])
-    user_repartidor = relationship("User", foreign_keys=[repartidor])
     user = relationship("User", foreign_keys=[id_usuario], back_populates="pedidos")
 
     # Relación con la tabla PedidosProductos
     productos = relationship("PedidosProductos", back_populates="pedido")
 
-    def __init__(self, id_usuario, estado_pedido, fecha_hora_pedido, domicilio=None, empleado=None, repartidor=None, fecha_hora_entrega=None):
+    def __init__(self, id_usuario, estado_pedido, fecha_hora_pedido, domicilio=None, empleado=None, fecha_hora_entrega=None):
         self.id_usuario = id_usuario
         self.estado_pedido = estado_pedido
         self.fecha_hora_pedido = fecha_hora_pedido
         self.domicilio = domicilio
         self.empleado = empleado
-        self.repartidor = repartidor
         self.fecha_hora_entrega = fecha_hora_entrega
 
 # Definimos la clase Pedidos_Productos que define la entidad de BD
