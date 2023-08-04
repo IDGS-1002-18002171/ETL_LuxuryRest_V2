@@ -80,7 +80,7 @@ def main(filename):
                         row['correo_electronico'],
                         row['telefono'],
                         row['direccion'],
-                        row['Active'],)  
+                        row['Activo'],)  
             session.add(proveedor)
             session.commit()
             session.close()
@@ -93,7 +93,7 @@ def main(filename):
                         row['unidad_medida'],
                         row['cantidad_minima_requerida'],
                         row['precio_compra'],
-                        row['Active'],)  
+                        row['Activo'],)  
             session.add(materia_prima)
             session.commit()
             session.close()

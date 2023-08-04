@@ -97,15 +97,15 @@ class Proveedores(Base):
     correo_electronico = Column(String(50), nullable=False)
     telefono = Column(String(20), nullable=False)
     direccion = Column(String(255), nullable=False)
-    Active = Column(Integer, nullable=False)
+    Activo = Column(Integer, nullable=False)
 
-    def __init__(self, nombre_empresa, nombre_contacto, correo_electronico, telefono, direccion, Active):
+    def __init__(self, nombre_empresa, nombre_contacto, correo_electronico, telefono, direccion, Activo):
         self.nombre_empresa = nombre_empresa
         self.nombre_contacto = nombre_contacto
         self.correo_electronico = correo_electronico
         self.telefono = telefono
         self.direccion = direccion
-        self.Active = Active
+        self.Activo = Activo
 
 # Definimos la clase Materias_Primas que define la entidad de BD
 class Materias_Primas(Base):
@@ -118,18 +118,18 @@ class Materias_Primas(Base):
     unidad_medida = Column(String(20), nullable=False)
     cantidad_minima_requerida = Column(DECIMAL(10, 2), nullable=False)
     precio_compra = Column(Float, nullable=False)
-    Active = Column(Integer, nullable=False)
+    Activo = Column(Integer, nullable=False)
 
     # Definimos la relación con la tabla Proveedores
     proveedor = relationship("Proveedores")
 
-    def __init__(self, id_proveedor, nombre, unidad_medida, cantidad_minima_requerida, precio_compra, Active):
+    def __init__(self, id_proveedor, nombre, unidad_medida, cantidad_minima_requerida, precio_compra, Activo):
         self.id_proveedor = id_proveedor
         self.nombre = nombre
         self.unidad_medida = unidad_medida
         self.cantidad_minima_requerida = cantidad_minima_requerida
         self.precio_compra = precio_compra
-        self.Active = Active
+        self.Activo = Activo
 
 # Definimos la clase Receta que define la entidad de BD
 class Receta(Base):

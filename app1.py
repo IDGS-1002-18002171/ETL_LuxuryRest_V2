@@ -16,543 +16,26 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session, aliased
 from sqlalchemy import text, func, create_engine
 import matplotlib.pyplot as plt
-#Declaramos el motor de base de datos SQLite.
-engine=create_engine('sqlite:///load/LuxuryRestETL.db')
-Session=sessionmaker(bind=engine)
-Base=declarative_base()
-# Declaramos la cadena de conexión para SQL Server con autenticación de Windows
-connection_string = 'mssql+pyodbc://LAPTOP-H1G95B7K\\2022@LAPTOP-H1G95B7K\\SQLEXPRESS/LuxuryRest?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes'
-engine1 = create_engine(connection_string)
-Session1 = sessionmaker(bind=engine1)
+import threading
+import funciones as funcion
+
 # Usamos warnings
 warnings.filterwarnings('ignore', category=SAWarning)
 # Crear la aplicación Flask
 app = Flask(__name__)
 # Crear la aplicación Dash
 dash_app = dash.Dash(__name__, server=app, url_base_pathname='/dash/')
-# Función para obtener las ganancias por un período personalizado
-def obtener_ganancias_por_periodo_personalizado(start_date, end_date):
-    # Convertir las fechas de inicio y fin a objetos datetime
-    start_date = datetime.strptime(start_date, '%Y-%m-%d')
-    end_date = datetime.strptime(end_date, '%Y-%m-%d')
-    # Crear una lista para almacenar los resultados por día
-    results = []
-    # Crear una sesión para interactuar con la base de datos
-    session = Session()
-    # Obtener las fechas y ganancias por día dentro del período seleccionado
-    current_date = start_date
-    while current_date <= end_date:
-        # Consulta para obtener las ganancias del día actual
-        ganancias_periodo = session.query(func.sum(Ventas.precio_total)).filter(Ventas.fecha_hora_venta >= current_date, Ventas.fecha_hora_venta < current_date + timedelta(days=1)).scalar()
-        # Agregar los resultados a la lista
-        results.append({
-            'Día': current_date.strftime('%Y-%m-%d'),
-            'Ganancias': ganancias_periodo or 0
-        })
-        # Moverse al siguiente día
-        current_date += timedelta(days=1)
-    # Cerrar la sesión
-    session.close()
-    # Crear un DataFrame para mostrar el resultado
-    df_ganancias = pd.DataFrame(results)
-    return df_ganancias
-
-# Función para obtener las ganancias por un período personalizado usando SQL Server
-def obtener_ganancias_por_periodo_personalizado1(start_date, end_date):
-    # Convertir las fechas de inicio y fin a objetos datetime
-    start_date = datetime.strptime(start_date, '%Y-%m-%d')
-    end_date = datetime.strptime(end_date, '%Y-%m-%d')
-    # Crear una lista para almacenar los resultados por día
-    results = []
-    # Crear una sesión para interactuar con la base de datos
-    session1 = Session1()
-    # Consulta para obtener las fechas y ganancias por día dentro del período seleccionado
-    current_date = start_date
-    while current_date <= end_date:
-        # Consulta para obtener las ganancias del día actual usando el motor de base de datos y la sesión
-        query = text("SELECT SUM(precio_total) FROM ventas WHERE fecha_hora_venta >= :current_date AND fecha_hora_venta < :next_date")
-        ganancias_periodo = session1.execute(query, {"current_date": current_date, "next_date": current_date + timedelta(days=1)}).scalar()
-
-        # Agregar los resultados a la lista
-        results.append({
-            'Día': current_date.strftime('%Y-%m-%d'),
-            'Ganancias': ganancias_periodo or 0
-        })
-        # Moverse al siguiente día
-        current_date += timedelta(days=1)
-    # Cerrar la sesión
-    session1.close()
-    # Crear un DataFrame para mostrar el resultado
-    df_ganancias = pd.DataFrame(results)
-    return df_ganancias
-
-# Función para obtener el gasto total en compras por un período personalizado
-def obtener_compras_por_periodo_personalizado(start_date, end_date):
-    # Convertir las fechas de inicio y fin a objetos datetime
-    start_date = datetime.strptime(start_date, '%Y-%m-%d')
-    end_date = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1)
-    # Crear una lista para almacenar los resultados por día
-    results = []
-    # Crear una sesión para interactuar con la base de datos
-    session = Session()
-    # Obtener las fechas y gasto total en compras por día dentro del período seleccionado
-    current_date = start_date
-    while current_date < end_date:
-        # Calcular el día siguiente al día actual
-        next_date = current_date + timedelta(days=1)
-        # Consulta para obtener el gasto total en compras del día actual
-        gasto_total_compras_periodo = session.query(func.sum(Compras.cantidad_comprada * Materias_Primas.precio_compra)).join(Materias_Primas).filter(
-            Compras.fecha_compra >= current_date,
-            Compras.fecha_compra < next_date
-        ).scalar()
-        # Agregar los resultados a la lista
-        results.append({
-            'Día': current_date.strftime('%Y-%m-%d'),
-            'Compras': gasto_total_compras_periodo or 0
-        })
-        # Moverse al siguiente día
-        current_date = next_date
-    # Cerrar la sesión
-    session.close()
-    # Crear un DataFrame para mostrar el resultado
-    df_gasto_total_compras = pd.DataFrame(results)
-    return df_gasto_total_compras
-
-# Función para obtener el gasto total en compras por un período personalizado
-def obtener_compras_por_periodo_personalizado1(start_date, end_date):
-    # Convertir las fechas de inicio y fin a objetos datetime
-    start_date = datetime.strptime(start_date, '%Y-%m-%d')
-    end_date = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1)
-    # Crear una lista para almacenar los resultados por día
-    results = []
-    # Crear una sesión para interactuar con la base de datos
-    session1 = Session1()
-    # Obtener las fechas y gasto total en compras por día dentro del período seleccionado
-    current_date = start_date
-    while current_date < end_date:
-        # Calcular el día siguiente al día actual
-        next_date = current_date + timedelta(days=1)
-        # Consulta para obtener el gasto total en compras del día actual
-        gasto_total_compras_periodo = session1.query(func.sum(Compras.cantidad_comprada * Materias_Primas.precio_compra)).join(Materias_Primas).filter(
-            Compras.fecha_compra >= current_date,
-            Compras.fecha_compra < next_date
-        ).scalar()
-        # Agregar los resultados a la lista
-        results.append({
-            'Día': current_date.strftime('%Y-%m-%d'),
-            'Compras': gasto_total_compras_periodo or 0
-        })
-        # Moverse al siguiente día
-        current_date = next_date
-    # Cerrar la sesión
-    session1.close()
-    # Crear un DataFrame para mostrar el resultado
-    df_gasto_total_compras = pd.DataFrame(results)
-    return df_gasto_total_compras
-
-# Función para obtener las ganancias por un rango de meses
-def obtener_ganancias_por_mes(start_year, start_month, end_year, end_month):
-    # Convertir los valores de año y mes a objetos datetime
-    start_date = datetime(start_year, start_month, 1)
-    end_date = datetime(end_year, end_month, 1) + pd.offsets.MonthEnd(0)
-    # Crear una lista para almacenar los resultados por mes
-    results = []
-    # Crear una sesión para interactuar con la base de datos
-    session = Session()
-    # Obtener las fechas y ganancias por mes dentro del rango seleccionado
-    current_date = start_date
-    while current_date <= end_date:
-        # Calcular el primer día del mes actual
-        first_day_of_month = current_date.replace(day=1)
-        # Calcular el último día del mes actual
-        last_day_of_month = first_day_of_month + pd.offsets.MonthEnd(0)
-        # Consulta para obtener las ganancias del mes actual
-        ganancias_mes = session.query(func.sum(Ventas.precio_total)).filter(
-            Ventas.fecha_hora_venta >= first_day_of_month,
-            Ventas.fecha_hora_venta <= last_day_of_month
-        ).scalar()
-        # Agregar los resultados a la lista
-        results.append({
-            'Mes': current_date.strftime('%Y-%m'),
-            'Ganancias': ganancias_mes or 0
-        })
-        # Moverse al siguiente mes
-        current_date = last_day_of_month + timedelta(days=1)
-    # Cerrar la sesión
-    session.close()
-    # Crear un DataFrame para mostrar el resultado
-    df_ganancias = pd.DataFrame(results)
-    return df_ganancias
-
-# Función para obtener las ganancias por un rango de meses
-def obtener_ganancias_por_mes1(start_year, start_month, end_year, end_month):
-    # Convertir los valores de año y mes a objetos datetime
-    start_date = datetime(start_year, start_month, 1)
-    end_date = datetime(end_year, end_month, 1) + pd.offsets.MonthEnd(0)
-    # Crear una lista para almacenar los resultados por mes
-    results = []
-    # Crear una sesión para interactuar con la base de datos
-    session1 = Session1()
-    # Obtener las fechas y ganancias por mes dentro del rango seleccionado
-    current_date = start_date
-    while current_date <= end_date:
-        # Calcular el primer día del mes actual
-        first_day_of_month = current_date.replace(day=1)
-        # Calcular el último día del mes actual
-        last_day_of_month = first_day_of_month + pd.offsets.MonthEnd(0)
-        # Consulta para obtener las ganancias del mes actual
-        ganancias_mes = session1.query(func.sum(Ventas.precio_total)).filter(
-            Ventas.fecha_hora_venta >= first_day_of_month,
-            Ventas.fecha_hora_venta <= last_day_of_month
-        ).scalar()
-        # Agregar los resultados a la lista
-        results.append({
-            'Mes': current_date.strftime('%Y-%m'),
-            'Ganancias': ganancias_mes or 0
-        })
-        # Moverse al siguiente mes
-        current_date = last_day_of_month + timedelta(days=1)
-    # Cerrar la sesión
-    session1.close()
-    # Crear un DataFrame para mostrar el resultado
-    df_ganancias = pd.DataFrame(results)
-    return df_ganancias
-
-# Función para obtener el gasto en compras por un rango de meses
-def obtener_compras_por_mes(start_year, start_month, end_year, end_month):
-    # Convertir los valores de año y mes a objetos datetime
-    start_date = datetime(start_year, start_month, 1)
-    end_date = datetime(end_year, end_month, 1) + pd.offsets.MonthEnd(0)
-    # Crear una lista para almacenar los resultados por mes
-    results = []
-    # Crear una sesión para interactuar con la base de datos
-    session = Session()
-    # Obtener el gasto en compras por mes dentro del rango seleccionado
-    current_date = start_date
-    while current_date <= end_date:
-        # Calcular el primer día del mes actual
-        first_day_of_month = current_date.replace(day=1)
-        # Calcular el último día del mes actual
-        last_day_of_month = first_day_of_month + pd.offsets.MonthEnd(0)
-        # Consulta para obtener el gasto en compras del mes actual
-        gasto_compras_mes = session.query(func.sum(Materias_Primas.precio_compra)).filter(
-            Compras.fecha_compra >= first_day_of_month,
-            Compras.fecha_compra <= last_day_of_month
-        ).scalar()
-        # Agregar los resultados a la lista
-        results.append({
-            'Mes': current_date.strftime('%Y-%m'),
-            'Compras': gasto_compras_mes or 0
-        })
-        # Moverse al siguiente mes
-        current_date = last_day_of_month + timedelta(days=1)
-    # Cerrar la sesión
-    session.close()
-    # Crear un DataFrame para mostrar el resultado
-    df_gasto_compras = pd.DataFrame(results)
-    return df_gasto_compras
-
-# Función para obtener el gasto en compras por un rango de meses
-def obtener_compras_por_mes1(start_year, start_month, end_year, end_month):
-    # Convertir los valores de año y mes a objetos datetime
-    start_date = datetime(start_year, start_month, 1)
-    end_date = datetime(end_year, end_month, 1) + pd.offsets.MonthEnd(0)
-    # Crear una lista para almacenar los resultados por mes
-    results = []
-    # Crear una sesión para interactuar con la base de datos
-    session1 = Session1()
-    # Obtener el gasto en compras por mes dentro del rango seleccionado
-    current_date = start_date
-    while current_date <= end_date:
-        # Calcular el primer día del mes actual
-        first_day_of_month = current_date.replace(day=1)
-        # Calcular el último día del mes actual
-        last_day_of_month = first_day_of_month + pd.offsets.MonthEnd(0)
-        # Consulta para obtener el gasto en compras del mes actual
-        gasto_compras_mes = session1.query(func.sum(Materias_Primas.precio_compra)).filter(
-            Compras.fecha_compra >= first_day_of_month,
-            Compras.fecha_compra <= last_day_of_month
-        ).scalar()
-        # Agregar los resultados a la lista
-        results.append({
-            'Mes': current_date.strftime('%Y-%m'),
-            'Compras': gasto_compras_mes or 0
-        })
-        # Moverse al siguiente mes
-        current_date = last_day_of_month + timedelta(days=1)
-    # Cerrar la sesión
-    session1.close()
-    # Crear un DataFrame para mostrar el resultado
-    df_gasto_compras = pd.DataFrame(results)
-    return df_gasto_compras
-
-def obtener_productos_mas_vendidos_pasteles(start_date, end_date):
-    # Convert the start_date and end_date to datetime objects
-    start_date = datetime.strptime(start_date, '%Y-%m-%d')
-    end_date = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1)  # Add 1 day to include the end date
-    # Create a session to interact with the database
-    session = Session()
-    # Query to get sales for each product and sum the quantities sold
-    ventas_productos = session.query(Productos.nombre,Productos.precio_venta, func.sum(PedidosProductos.cantidad)).\
-        join(PedidosProductos, Productos.id_producto == PedidosProductos.id_producto).\
-        join(Pedidos, PedidosProductos.id_pedido == Pedidos.id_pedido).\
-        filter(Pedidos.fecha_hora_pedido >= start_date, Pedidos.fecha_hora_pedido < end_date).\
-        group_by(Productos.nombre).\
-        order_by(func.sum(PedidosProductos.cantidad).desc()).\
-        all()
-    # Close the session
-    session.close()
-    # Check if the list is empty before accessing its elements
-    if not ventas_productos:
-        # Return an empty list if there are no sales data
-        return [], []
-    # Create a list of tuples (product name, quantity sold) for the pie chart
-    productos_mas_vendidos = [(nombre,precio_venta, cantidad) for nombre,precio_venta, cantidad in ventas_productos]
-    return productos_mas_vendidos
-
-def obtener_productos_mas_vendidos_pasteles1(start_date, end_date):
-    # Convert the start_date and end_date to datetime objects
-    start_date = datetime.strptime(start_date, '%Y-%m-%d')
-    end_date = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1)  # Add 1 day to include the end date
-    # Create a session to interact with the database
-    session1 = Session1()
-    # Query to get sales for each product and sum the quantities sold
-    ventas_productos = session1.query(
-    Productos.nombre, Productos.precio_venta, func.sum(PedidosProductos.cantidad)
-    ).\
-    join(PedidosProductos, Productos.id_producto == PedidosProductos.id_producto).\
-    join(Pedidos, PedidosProductos.id_pedido == Pedidos.id_pedido).\
-    filter(Pedidos.fecha_hora_pedido >= start_date, Pedidos.fecha_hora_pedido < end_date).\
-    group_by(Productos.nombre, Productos.precio_venta).\
-    order_by(func.sum(PedidosProductos.cantidad).desc()).\
-    all()
-    # Close the session
-    session1.close()
-    # Check if the list is empty before accessing its elements
-    if not ventas_productos:
-        # Return an empty list if there are no sales data
-        return [], []
-    # Create a list of tuples (product name, quantity sold) for the pie chart
-    productos_mas_vendidos = [(nombre,precio_venta, cantidad) for nombre,precio_venta, cantidad in ventas_productos]
-    return productos_mas_vendidos
-
-def obtener_productos_valoracion_actual():
-    # Crear una lista para almacenar los resultados
-    results = []
-    # Crear una sesión para interactuar con la base de datos
-    session = Session()
-    # Consulta para obtener los productos y su valoración actual
-    productos_valoracion = session.query(Productos.nombre, Productos.valoracionT, Productos.valoracionC).all()
-    # Cerrar la sesión
-    session.close()
-    # Verificar si la lista está vacía antes de acceder a sus elementos
-    if not productos_valoracion:
-        # Retornar una lista vacía si no hay datos de productos
-        return []
-    # Calcular la valoración actual y agregar los resultados a la lista
-    for nombre, valoracionT, valoracionC in productos_valoracion:
-        valoracion_actual = valoracionT / valoracionC if valoracionC != 0 else 0
-        results.append({
-            'Nombre': nombre,
-            'Valoracion Actual': valoracion_actual
-        })
-    # Crear un DataFrame para mostrar el resultado
-    df_valoracion_actual = pd.DataFrame(results)
-    return df_valoracion_actual
-
-def obtener_productos_valoracion_actual1():
-    # Crear una lista para almacenar los resultados
-    results = []
-    # Crear una sesión para interactuar con la base de datos
-    session1 = Session1()
-    # Consulta para obtener los productos y su valoración actual
-    productos_valoracion = session1.query(Productos.nombre, Productos.valoracionT, Productos.valoracionC).all()
-    # Cerrar la sesión
-    session1.close()
-    # Verificar si la lista está vacía antes de acceder a sus elementos
-    if not productos_valoracion:
-        # Retornar una lista vacía si no hay datos de productos
-        return []
-    # Calcular la valoración actual y agregar los resultados a la lista
-    for nombre, valoracionT, valoracionC in productos_valoracion:
-        valoracion_actual = valoracionT / valoracionC if valoracionC != 0 else 0
-        results.append({
-            'Nombre': nombre,
-            'Valoracion Actual': valoracion_actual
-        })
-    # Crear un DataFrame para mostrar el resultado
-    df_valoracion_actual = pd.DataFrame(results)
-    return df_valoracion_actual
-
-def obtener_productos_y_stock_actual():
-    # Create a session to interact with the database
-    session = Session()
-    # Query to get product names and their current stock quantities
-    productos_stock_actual = session.query(Productos.nombre, Productos.cantidad_disponible).all()
-    # Close the session
-    session.close()
-    # Check if the list is empty before accessing its elements
-    if not productos_stock_actual:
-        # Return an empty list if there are no products or stock data
-        return []
-    # Create a list of dictionaries containing product name and current stock quantity
-    results = [{'Nombre': nombre, 'Stock Actual': stock} for nombre, stock in productos_stock_actual]
-    # Crear un DataFrame para mostrar el resultado
-    df_stock = pd.DataFrame(results)
-    return df_stock
-
-def obtener_productos_y_stock_actual1():
-    # Create a session to interact with the database
-    session1 = Session1()
-    # Query to get product names and their current stock quantities
-    productos_stock_actual = session1.query(Productos.nombre, Productos.cantidad_disponible).all()
-    # Close the session
-    session1.close()
-    # Check if the list is empty before accessing its elements
-    if not productos_stock_actual:
-        # Return an empty list if there are no products or stock data
-        return []
-    # Create a list of dictionaries containing product name and current stock quantity
-    results = [{'Nombre': nombre, 'Stock Actual': stock} for nombre, stock in productos_stock_actual]
-    # Crear un DataFrame para mostrar el resultado
-    df_stock = pd.DataFrame(results)
-    return df_stock
-
-def obtener_cantidad_materia_prima_actual():
-    session = Session()
-    try:
-        # Consulta para obtener la cantidad actual de materia prima almacenada en el inventario
-        materias_primas_inventario = session.query(Materias_Primas.nombre, Inventario.cantidad_almacenada).\
-            join(Inventario, Materias_Primas.id_materia_prima == Inventario.id_materia_prima).all()
-        # Cerramos la sesión
-        session.close()
-        # Verificamos si la lista está vacía antes de acceder a sus elementos
-        if not materias_primas_inventario:
-            # Devolvemos una lista vacía si no hay datos en el inventario
-            return []
-        # Creamos una lista de diccionarios que contiene el nombre de la materia prima y su cantidad almacenada
-        results = [{'Materia Prima': nombre, 'Cantidad Almacenada': cantidad} for nombre, cantidad in materias_primas_inventario]
-        # Creamos un DataFrame para mostrar los resultados
-        df_materia_prima = pd.DataFrame(results)
-        return df_materia_prima
-    except Exception as e:
-        # En caso de que ocurra un error, mostramos el mensaje y devolvemos una lista vacía
-        print(f"Error al obtener la cantidad de materia prima: {str(e)}")
-        return []
-
-def obtener_cantidad_materia_prima_actual1():
-    session1 = Session1()
-    try:
-        # Consulta para obtener la cantidad actual de materia prima almacenada en el inventario
-        materias_primas_inventario = session1.query(Materias_Primas.nombre, Inventario.cantidad_almacenada).\
-            join(Inventario, Materias_Primas.id_materia_prima == Inventario.id_materia_prima).all()
-        # Cerramos la sesión
-        session1.close()
-        # Verificamos si la lista está vacía antes de acceder a sus elementos
-        if not materias_primas_inventario:
-            # Devolvemos una lista vacía si no hay datos en el inventario
-            return []
-        # Creamos una lista de diccionarios que contiene el nombre de la materia prima y su cantidad almacenada
-        results = [{'Materia Prima': nombre, 'Cantidad Almacenada': cantidad} for nombre, cantidad in materias_primas_inventario]
-        # Creamos un DataFrame para mostrar los resultados
-        df_materia_prima = pd.DataFrame(results)
-        return df_materia_prima
-    except Exception as e:
-        # En caso de que ocurra un error, mostramos el mensaje y devolvemos una lista vacía
-        print(f"Error al obtener la cantidad de materia prima: {str(e)}")
-        return []
-
-def generate_gauge_graph(producto, stock_actual):
-    # Create the gauge graph
-    gauge_graph = go.Figure(go.Indicator(
-        mode='gauge+number',
-        value=stock_actual,
-        domain={'x': [0, 1], 'y': [0, 1]},
-        gauge={
-            'axis': {'range': [0, 20]},
-            'bar': {'color': '#636efa'},
-            'steps': [
-                {'range': [0, 5], 'color': 'red'},
-                {'range': [5, 10], 'color': 'yellow'},
-                {'range': [15, 20], 'color': 'green'}
-            ],
-        }
-    ))
-    # Set the title of the gauge graph
-    gauge_graph.update_layout(title_text=f'{producto} - Stock Actual: {stock_actual}', width=400, height=300)
-    return gauge_graph
-
-def generate_gauge_graph1(producto, stock_actual):
-    # Create the gauge graph
-    gauge_graph = go.Figure(go.Indicator(
-        mode='gauge+number',
-        value=stock_actual,
-        domain={'x': [0, 1], 'y': [0, 1]},
-        gauge={
-            'axis': {'range': [0, 500]},
-            'bar': {'color': '#636efa'},
-            'steps': [
-                {'range': [0, 100], 'color': 'red'},
-                {'range': [100, 200], 'color': 'yellow'},
-                {'range': [400, 500], 'color': 'green'}
-            ],
-        }
-    ))
-    # Set the title of the gauge graph
-    gauge_graph.update_layout(title_text=f'{producto} - Inventario Actual: {stock_actual}', width=400, height=300)
-    return gauge_graph
-
-def obtener_usuarios_y_ventas_top_10():
-    # Create a session to interact with the database
-    session = Session()
-    # Query to get user names and the count of their sales
-    usuarios_y_ventas = (
-        session.query(User.name, func.count(Ventas.id_venta).label('cantidad_ventas'))
-        .join(Ventas, User.id == Ventas.id_usuario)
-        .group_by(User.name)
-        .order_by(func.count(Ventas.id_venta).desc())
-        .limit(10)
-        .all()
-    )
-    # Close the session
-    session.close()
-    # Create a list of dictionaries containing user name and their sales count
-    results = [{'Usuario': nombre, 'No. de Ventas': ventas} for nombre, ventas in usuarios_y_ventas]
-    # Create a DataFrame to show the result
-    df_usuarios_ventas = pd.DataFrame(results)
-    return df_usuarios_ventas
-
-def obtener_usuarios_y_ventas_top_101():
-    # Create a session to interact with the database
-    session1 = Session1()
-    # Query to get user names and the count of their sales
-    usuarios_y_ventas = (
-        session1.query(User.name, func.count(Ventas.id_venta).label('cantidad_ventas'))
-        .join(Ventas, User.id == Ventas.id_usuario)
-        .group_by(User.name)
-        .order_by(func.count(Ventas.id_venta).desc())
-        .limit(10)
-        .all()
-    )
-    # Close the session
-    session1.close()
-    # Create a list of dictionaries containing user name and their sales count
-    results = [{'Usuario': nombre, 'No. de Ventas': ventas} for nombre, ventas in usuarios_y_ventas]
-    # Create a DataFrame to show the result
-    df_usuarios_ventas = pd.DataFrame(results)
-    return df_usuarios_ventas
-
 # Set the initial df_ganancias when the app starts
 default_start_date = (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d')
 default_end_date = datetime.now().strftime('%Y-%m-%d')
-df_ganancias = obtener_ganancias_por_periodo_personalizado(default_start_date, default_end_date)
+df_ganancias = funcion.obtener_ganancias_por_periodo_personalizado(default_start_date, default_end_date)
 # Llamar a la función para obtener la capacidad total del almacén
-capacidad_almacen = obtener_productos_y_stock_actual()
-capacidad_almacen1 = obtener_productos_y_stock_actual1()
+capacidad_almacen = funcion.obtener_productos_y_stock_actual()
+capacidad_almacen1 = funcion.obtener_productos_y_stock_actual1()
 capacidad_almacen = pd.concat([capacidad_almacen, capacidad_almacen1], ignore_index=True)
 # Llamar a la función para obtener la cantidad actual de materia prima en el inventario
-cantidad_materia_prima_actual = obtener_cantidad_materia_prima_actual()
-cantidad_materia_prima_actual1 = obtener_cantidad_materia_prima_actual1()
+cantidad_materia_prima_actual = funcion.obtener_cantidad_materia_prima_actual()
+cantidad_materia_prima_actual1 = funcion.obtener_cantidad_materia_prima_actual1()
 cantidad_materia_prima_actual = pd.concat([cantidad_materia_prima_actual, cantidad_materia_prima_actual1], ignore_index=True)
 current_view_type='ventas'
 # Set the initial button state when the app starts
@@ -666,24 +149,24 @@ def update_graph(daily_clicks, monthly_clicks, toggle_clicks, n_clicks, data, st
     if is_daily_view:
         if current_view_type == 'ventas':
             # Daily view - Ventas
-            df_ganancias = obtener_ganancias_por_periodo_personalizado(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
-            df_ganancias1 = obtener_ganancias_por_periodo_personalizado1(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+            df_ganancias = funcion.obtener_ganancias_por_periodo_personalizado(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+            df_ganancias1 = funcion.obtener_ganancias_por_periodo_personalizado1(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
             # Combina los DataFrames a lo largo del eje de las filas
             df_ganancias = pd.concat([df_ganancias, df_ganancias1], ignore_index=True)
             x_column = 'Día'
             title = f'Ganancias Diarias del {start_date.strftime("%Y-%m-%d")} al {end_date.strftime("%Y-%m-%d")}'
         else:
             # Daily view - Compras
-            df_compras = obtener_compras_por_periodo_personalizado(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
-            df_compras1 = obtener_compras_por_periodo_personalizado1(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+            df_compras = funcion.obtener_compras_por_periodo_personalizado(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+            df_compras1 = funcion.obtener_compras_por_periodo_personalizado1(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
             df_compras = pd.concat([df_compras, df_compras1], ignore_index=True)
             x_column = 'Día'
             title = f'Compras Diarias del {start_date.strftime("%Y-%m-%d")} al {end_date.strftime("%Y-%m-%d")}'
     else:
         if current_view_type == 'ventas':
             # Monthly view - Ventas
-            df_ganancias = obtener_ganancias_por_mes(start_date.year, start_date.month, end_date.year, end_date.month)
-            df_ganancias1 = obtener_ganancias_por_mes1(start_date.year, start_date.month, end_date.year, end_date.month)
+            df_ganancias = funcion.obtener_ganancias_por_mes(start_date.year, start_date.month, end_date.year, end_date.month)
+            df_ganancias1 = funcion.obtener_ganancias_por_mes1(start_date.year, start_date.month, end_date.year, end_date.month)
             df_ganancias = pd.concat([df_ganancias, df_ganancias1], ignore_index=True)
             x_column = 'Mes'
             title = f'Ganancias Mensuales del {start_date.strftime("%Y-%m")} al {end_date.strftime("%Y-%m")}'
@@ -691,8 +174,8 @@ def update_graph(daily_clicks, monthly_clicks, toggle_clicks, n_clicks, data, st
             start_date = start_date.replace(day=1)
         else:
             # Monthly view - Compras
-            df_compras = obtener_compras_por_mes(start_date.year, start_date.month, end_date.year, end_date.month)
-            df_compras1 = obtener_compras_por_mes1(start_date.year, start_date.month, end_date.year, end_date.month)
+            df_compras = funcion.obtener_compras_por_mes(start_date.year, start_date.month, end_date.year, end_date.month)
+            df_compras1 = funcion.obtener_compras_por_mes1(start_date.year, start_date.month, end_date.year, end_date.month)
             df_compras = pd.concat([df_compras, df_compras1], ignore_index=True)
             x_column = 'Mes'
             title = f'Compras Mensuales del {start_date.strftime("%Y-%m")} al {end_date.strftime("%Y-%m")}'
@@ -731,11 +214,11 @@ def update_graph(daily_clicks, monthly_clicks, toggle_clicks, n_clicks, data, st
     pie_chart = px.pie(title='Productos Más Vendidos')
     try:
         # Agregar el código para obtener los nombres de los productos más vendidos y sus cantidades
-        productos_mas_vendidos = obtener_productos_mas_vendidos_pasteles(
+        productos_mas_vendidos = funcion.obtener_productos_mas_vendidos_pasteles(
             start_date.strftime('%Y-%m-%d'),
             end_date.strftime('%Y-%m-%d')
         )
-        productos_mas_vendidos1 = obtener_productos_mas_vendidos_pasteles1(
+        productos_mas_vendidos1 = funcion.obtener_productos_mas_vendidos_pasteles1(
             start_date.strftime('%Y-%m-%d'),
             end_date.strftime('%Y-%m-%d')
         )
@@ -765,8 +248,8 @@ def update_graph(daily_clicks, monthly_clicks, toggle_clicks, n_clicks, data, st
     except ValueError as e:
         print(f"Error: {e}")
     # Actualizar la tabla de valoración de productos
-    df_valoracion_actual = obtener_productos_valoracion_actual()
-    df_valoracion_actual1 = obtener_productos_valoracion_actual1()
+    df_valoracion_actual = funcion.obtener_productos_valoracion_actual()
+    df_valoracion_actual1 = funcion.obtener_productos_valoracion_actual1()
     df_valoracion_actual = pd.concat([df_valoracion_actual, df_valoracion_actual1], ignore_index=True)
     # Paleta de colores personalizada con 20 colores diferentes
     custom_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
@@ -794,12 +277,12 @@ def update_graph(daily_clicks, monthly_clicks, toggle_clicks, n_clicks, data, st
     for i in range(len(capacidad_almacen)):
         # Aquí iría el código para generar los gráficos de almacen-graphic para cada elemento en capacidad_almacen
         # Se asume que existirá una función llamada 'generate_almacen_graph' que generará los gráficos para cada elemento de capacidad_almacen
-        graph = generate_gauge_graph(capacidad_almacen['Nombre'][i],capacidad_almacen['Stock Actual'][i])  # Esta función es hipotética, deberías crearla según tus necesidades
+        graph = funcion.generate_gauge_graph(capacidad_almacen['Nombre'][i],capacidad_almacen['Stock Actual'][i])  # Esta función es hipotética, deberías crearla según tus necesidades
         graphs_almacen.append(graph)
     for i in range(len(cantidad_materia_prima_actual)):
         # Aquí iría el código para generar los gráficos de almacen-graphic para cada elemento en capacidad_almacen
         # Se asume que existirá una función llamada 'generate_almacen_graph' que generará los gráficos para cada elemento de capacidad_almacen
-        graph = generate_gauge_graph1(cantidad_materia_prima_actual['Materia Prima'][i],int(cantidad_materia_prima_actual['Cantidad Almacenada'][i]))  # Esta función es hipotética, deberías crearla según tus necesidades
+        graph = funcion.generate_gauge_graph1(cantidad_materia_prima_actual['Materia Prima'][i],int(cantidad_materia_prima_actual['Cantidad Almacenada'][i]))  # Esta función es hipotética, deberías crearla según tus necesidades
         graphs_almacen1.append(graph)
     if current_view_type == 'ventas':
         # Mostrar la sección de ventas y ocultar la sección de materia prima
@@ -809,8 +292,8 @@ def update_graph(daily_clicks, monthly_clicks, toggle_clicks, n_clicks, data, st
         # Mostrar la sección de materia prima y ocultar la sección de ventas
         ventas_section_style = {'display': 'none'}
         materia_prima_section_style = {'display': 'block'}
-    df_usuarios_ventas = obtener_usuarios_y_ventas_top_10()
-    df_usuarios_ventas1 = obtener_usuarios_y_ventas_top_101()
+    df_usuarios_ventas = funcion.obtener_usuarios_y_ventas_top_10()
+    df_usuarios_ventas1 = funcion.obtener_usuarios_y_ventas_top_101()
     df_usuarios_ventas = pd.concat([df_usuarios_ventas, df_usuarios_ventas1], ignore_index=True)
     # Crear el gráfico de líneas
     usuarios_grafico = go.Figure(go.Scatter(x=df_usuarios_ventas['Usuario'], y=df_usuarios_ventas['No. de Ventas'],
