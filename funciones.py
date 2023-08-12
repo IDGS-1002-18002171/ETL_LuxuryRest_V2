@@ -3,10 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
 from flask import Flask, render_template, jsonify, request, Response
-import dash
-from dash import dcc, html,State
-from dash.dependencies import Input, Output
-from clases import Ventas, PedidosProductos, Pedidos, Productos, Compras, Materias_Primas, Inventario, User
+from clases import Ventas, Pedidos_Productos, Pedidos, Productos, Compras, Materias_Primas, Inventario, User
 from datetime import datetime, timedelta
 import json
 import warnings
@@ -15,8 +12,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session, aliased
 from sqlalchemy import text, func, create_engine
-import matplotlib.pyplot as plt
 import threading
+import logging
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 # Función para obtener una sesión para la base de datos SQLite
 def get_sqlite_session():
     engine = create_engine('sqlite:///load/LuxuryRestETL.db')
@@ -331,12 +330,12 @@ def obtener_productos_mas_vendidos_pasteles(start_date, end_date):
         # Create a session to interact with the database
         session = get_sqlite_session()
         # Query to get sales for each product and sum the quantities sold
-        ventas_productos = session.query(Productos.nombre, Productos.precio_venta, func.sum(PedidosProductos.cantidad)).\
-            join(PedidosProductos, Productos.id_producto == PedidosProductos.id_producto).\
-            join(Pedidos, PedidosProductos.id_pedido == Pedidos.id_pedido).\
-            filter(Pedidos.fecha_hora_pedido >= start_date, Pedidos.fecha_hora_pedido < end_date,Productos.estatus == 1).\
-            group_by(Productos.nombre).\
-            order_by(func.sum(PedidosProductos.cantidad).desc()).\
+        ventas_productos = session.query(Productos.nombre, Productos.precio_venta, func.sum(Pedidos_Productos.cantidad)).\
+            join(Pedidos_Productos, Productos.id_producto == Pedidos_Productos.id_producto).\
+            join(Pedidos, Pedidos_Productos.id_pedido == Pedidos.id_pedido).\
+            filter(Pedidos.fecha_hora_pedido >= start_date, Pedidos.fecha_hora_pedido < end_date, Productos.estatus == 1).\
+            group_by(Productos.nombre, Productos.precio_venta).\
+            order_by(func.sum(Pedidos_Productos.cantidad).desc()).\
             all()
         # Close the session
         session.close()
@@ -360,15 +359,13 @@ def obtener_productos_mas_vendidos_pasteles1(start_date, end_date):
         # Create a session to interact with the database
         session1 = get_sql_server_session()
         # Query to get sales for each product and sum the quantities sold
-        ventas_productos = session1.query(
-        Productos.nombre, Productos.precio_venta, func.sum(PedidosProductos.cantidad)
-        ).\
-        join(PedidosProductos, Productos.id_producto == PedidosProductos.id_producto).\
-        join(Pedidos, PedidosProductos.id_pedido == Pedidos.id_pedido).\
-        filter(Pedidos.fecha_hora_pedido >= start_date, Pedidos.fecha_hora_pedido < end_date, Productos.estatus == 1).\
-        group_by(Productos.nombre, Productos.precio_venta).\
-        order_by(func.sum(PedidosProductos.cantidad).desc()).\
-        all()
+        ventas_productos = session1.query(Productos.nombre, Productos.precio_venta, func.sum(Pedidos_Productos.cantidad)).\
+            join(Pedidos_Productos, Productos.id_producto == Pedidos_Productos.id_producto).\
+            join(Pedidos, Pedidos_Productos.id_pedido == Pedidos.id_pedido).\
+            filter(Pedidos.fecha_hora_pedido >= start_date, Pedidos.fecha_hora_pedido < end_date,Productos.estatus == 1).\
+            group_by(Productos.nombre).\
+            order_by(func.sum(Pedidos_Productos.cantidad).desc()).\
+            all()
         # Close the session
         session1.close()
         # Check if the list is empty before accessing its elements

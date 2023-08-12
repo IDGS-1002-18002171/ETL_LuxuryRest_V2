@@ -6,3 +6,5 @@ pandas
 plotly
 dash_core_components 
 dash_html_components 
+flask-cors
+matplotlib

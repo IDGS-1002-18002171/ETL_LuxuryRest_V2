@@ -4,10 +4,9 @@ from load.base import Base
 from sqlalchemy.ext.declarative import declarative_base
 
 
-
 # Definimos la clase User que define la entidad de BD
 class User(Base):
-    __tablename__ = 'user'
+    __tablename__ = 'User'
 
     # Definicion de Columnas
     id = Column(Integer, primary_key=True)
@@ -18,7 +17,7 @@ class User(Base):
     confirmed_at = Column(DateTime)
 
     # Definimos la relación con la tabla UserRoles
-    roles = relationship("UserRoles", back_populates="user")
+    roles = relationship("User_Roles", back_populates="user")
     # Relación uno a muchos con Pedidos
     pedidos = relationship("Pedidos", foreign_keys="[Pedidos.id_usuario]", back_populates="user")
 
@@ -34,7 +33,7 @@ class User(Base):
 
 # Definimos la clase Role que define la entidad de BD
 class Role(Base):
-    __tablename__ = 'role'
+    __tablename__ = 'Role'
 
     # Definicion de Columnas
     id = Column(Integer, primary_key=True)
@@ -47,10 +46,10 @@ class Role(Base):
         self.description = description
 
 # Definimos la clase UserRoles que define la entidad de BD
-class UserRoles(Base):
-    __tablename__ = 'user_roles'
-    userId = Column(Integer, ForeignKey('user.id'), primary_key=True)
-    roleId = Column(Integer, ForeignKey('role.id'), nullable=True)
+class User_Roles(Base):
+    __tablename__ = 'User_Roles'
+    userId = Column(Integer, ForeignKey('User.id'), primary_key=True)
+    roleId = Column(Integer, ForeignKey('Role.id'), nullable=True)
 
     # Definimos la relación con la tabla User
     user = relationship("User", back_populates="roles")
@@ -75,7 +74,7 @@ class Productos(Base):
     estatus = Column(Integer, nullable=False)
 
     recetas = relationship("Receta", foreign_keys="[Receta.id_producto]", back_populates="producto")
-    pedidos = relationship("PedidosProductos", back_populates="producto")  # Change "pedido" to "producto"
+    pedidos = relationship("Pedidos_Productos", back_populates="producto")  # Change "pedido" to "producto"
     
     def __init__(self, nombre, descripcion, precio_venta, cantidad_disponible, valoracionT=None, valoracionC=None, estatus=None, imagen=None):
         self.nombre = nombre
@@ -155,7 +154,7 @@ class Ventas(Base):
 
     # Definicion de Columnas
     id_venta = Column(Integer, primary_key=True)
-    id_usuario = Column(Integer, ForeignKey('user.id'), nullable=False)
+    id_usuario = Column(Integer, ForeignKey('User.id'), nullable=False)
     precio_total = Column(Float, nullable=False)
     fecha_hora_venta = Column(DateTime, nullable=False)
 
@@ -174,11 +173,11 @@ class Pedidos(Base):
 
     # Definicion de Columnas
     id_pedido = Column(Integer, primary_key=True)
-    id_usuario = Column(Integer, ForeignKey('user.id'), nullable=False)
+    id_usuario = Column(Integer, ForeignKey('User.id'), nullable=False)
     estado_pedido = Column(Integer, nullable=False)
     fecha_hora_pedido = Column(DateTime, nullable=False)
     domicilio = Column(String(70))
-    empleado = Column(Integer, ForeignKey('user.id'))
+    empleado = Column(Integer, ForeignKey('User.id'))
     fecha_hora_entrega = Column(DateTime)
 
     # Definimos las relaciones con la tabla User
@@ -186,7 +185,7 @@ class Pedidos(Base):
     user = relationship("User", foreign_keys=[id_usuario], back_populates="pedidos")
 
     # Relación con la tabla PedidosProductos
-    productos = relationship("PedidosProductos", back_populates="pedido")
+    productos = relationship("Pedidos_Productos", back_populates="pedido")
 
     def __init__(self, id_usuario, estado_pedido, fecha_hora_pedido, domicilio=None, empleado=None, fecha_hora_entrega=None):
         self.id_usuario = id_usuario
@@ -197,7 +196,7 @@ class Pedidos(Base):
         self.fecha_hora_entrega = fecha_hora_entrega
 
 # Definimos la clase Pedidos_Productos que define la entidad de BD
-class PedidosProductos(Base):
+class Pedidos_Productos(Base):
     __tablename__ = 'Pedidos_Productos'
 
     id_pedido = Column(Integer, ForeignKey('Pedidos.id_pedido'), nullable=False)
@@ -243,7 +242,7 @@ class Compras(Base):
 
     # Definicion de Columnas
     id_compra = Column(Integer, primary_key=True)
-    id_usuario = Column(Integer, ForeignKey('user.id'), nullable=False)
+    id_usuario = Column(Integer, ForeignKey('User.id'), nullable=False)
     id_materia_prima = Column(Integer, ForeignKey('Materias_Primas.id_materia_prima'), nullable=False)
     cantidad_comprada = Column(Integer, nullable=False)
     fecha_compra = Column(DateTime, nullable=False)
@@ -263,11 +262,11 @@ class Merma(Base):
     __tablename__ = 'Merma'
 
     # Definicion de Columnas
-    id_perecedero = Column(Integer, primary_key=True)
+    id_Merma = Column(Integer, primary_key=True)
     id_producto = Column(Integer, ForeignKey('Productos.id_producto'), nullable=False)
     descripcion = Column(String(50))
     cantidad_perdida = Column(DECIMAL(12, 5), nullable=False)
-    fecha_registro = Column(DateTime, nullable=False)
+    fecha_registro = Column(Date, nullable=False)
 
     # Definimos la relación con la tabla Productos
     producto = relationship("Productos")

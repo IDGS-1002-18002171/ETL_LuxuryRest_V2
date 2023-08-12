@@ -33,17 +33,10 @@ def main(file_name):
     df = _remove_scape_characters_from_body(df)
     #Invocamos a la función para enriquecer el df agregando una columna con los tokens del title y el body.
     df = _data_enrichment(df)"""
-    # Invocamos a la función para eliminar registros duplicados con base en el título
-    try:
-        df = _remove_duplicate_entries(df, 'nombre')
-    except Exception as e:
-        print(e)
-    try:
-        df = _remove_duplicate_columns(df, 'id_pedido','id_producto')
-    except Exception as e:
-        print(e)
     #Invocamos a la función para eliminar registros con valores faltantes
     """df = drop_rows_with_missing_values(df) """
+    #Invocamos a la función para eliminar registros extras
+    df= df.drop('_sa_instance_state', axis=1, errors='ignore')
     #Invocamos a la función para guardar el df un archivo csv.
     _save_data_to_csv(df, file_name)
     

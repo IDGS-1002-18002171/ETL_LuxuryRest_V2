@@ -6,7 +6,7 @@ from flask import Flask, render_template, jsonify, request, Response
 import dash
 from dash import dcc, html,State
 from dash.dependencies import Input, Output
-from clases import Ventas, PedidosProductos, Pedidos, Productos, Compras, Materias_Primas, Inventario, User
+from clases import Ventas, Pedidos_Productos, Pedidos, Productos, Compras, Materias_Primas, Inventario, User
 from datetime import datetime, timedelta
 import json
 import warnings
@@ -31,12 +31,12 @@ default_end_date = datetime.now().strftime('%Y-%m-%d')
 df_ganancias = funcion.obtener_ganancias_por_periodo_personalizado(default_start_date, default_end_date)
 # Llamar a la función para obtener la capacidad total del almacén
 capacidad_almacen = funcion.obtener_productos_y_stock_actual()
-capacidad_almacen1 = funcion.obtener_productos_y_stock_actual1()
-capacidad_almacen = pd.concat([capacidad_almacen, capacidad_almacen1], ignore_index=True)
+#capacidad_almacen1 = funcion.obtener_productos_y_stock_actual1()
+#capacidad_almacen = pd.concat([capacidad_almacen, capacidad_almacen1], ignore_index=True)
 # Llamar a la función para obtener la cantidad actual de materia prima en el inventario
 cantidad_materia_prima_actual = funcion.obtener_cantidad_materia_prima_actual()
-cantidad_materia_prima_actual1 = funcion.obtener_cantidad_materia_prima_actual1()
-cantidad_materia_prima_actual = pd.concat([cantidad_materia_prima_actual, cantidad_materia_prima_actual1], ignore_index=True)
+#cantidad_materia_prima_actual1 = funcion.obtener_cantidad_materia_prima_actual1()
+#cantidad_materia_prima_actual = pd.concat([cantidad_materia_prima_actual, cantidad_materia_prima_actual1], ignore_index=True)
 current_view_type='ventas'
 # Set the initial button state when the app starts
 initial_button_state = {'daily-clicks': 0, 'monthly-clicks': 0, 'view-type': 'ventas', 'view-toggle-button': 0}
@@ -150,24 +150,24 @@ def update_graph(daily_clicks, monthly_clicks, toggle_clicks, n_clicks, data, st
         if current_view_type == 'ventas':
             # Daily view - Ventas
             df_ganancias = funcion.obtener_ganancias_por_periodo_personalizado(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
-            df_ganancias1 = funcion.obtener_ganancias_por_periodo_personalizado1(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+            #df_ganancias1 = funcion.obtener_ganancias_por_periodo_personalizado1(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
             # Combina los DataFrames a lo largo del eje de las filas
-            df_ganancias = pd.concat([df_ganancias, df_ganancias1], ignore_index=True)
+            #df_ganancias = pd.concat([df_ganancias, df_ganancias1], ignore_index=True)
             x_column = 'Día'
             title = f'Ganancias Diarias del {start_date.strftime("%Y-%m-%d")} al {end_date.strftime("%Y-%m-%d")}'
         else:
             # Daily view - Compras
             df_compras = funcion.obtener_compras_por_periodo_personalizado(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
-            df_compras1 = funcion.obtener_compras_por_periodo_personalizado1(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
-            df_compras = pd.concat([df_compras, df_compras1], ignore_index=True)
+            #df_compras1 = funcion.obtener_compras_por_periodo_personalizado1(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+            #df_compras = pd.concat([df_compras, df_compras1], ignore_index=True)
             x_column = 'Día'
             title = f'Compras Diarias del {start_date.strftime("%Y-%m-%d")} al {end_date.strftime("%Y-%m-%d")}'
     else:
         if current_view_type == 'ventas':
             # Monthly view - Ventas
             df_ganancias = funcion.obtener_ganancias_por_mes(start_date.year, start_date.month, end_date.year, end_date.month)
-            df_ganancias1 = funcion.obtener_ganancias_por_mes1(start_date.year, start_date.month, end_date.year, end_date.month)
-            df_ganancias = pd.concat([df_ganancias, df_ganancias1], ignore_index=True)
+            #df_ganancias1 = funcion.obtener_ganancias_por_mes1(start_date.year, start_date.month, end_date.year, end_date.month)
+            #df_ganancias = pd.concat([df_ganancias, df_ganancias1], ignore_index=True)
             x_column = 'Mes'
             title = f'Ganancias Mensuales del {start_date.strftime("%Y-%m")} al {end_date.strftime("%Y-%m")}'
             # Adjust the start_date to 1st of the month for the graph
@@ -175,8 +175,8 @@ def update_graph(daily_clicks, monthly_clicks, toggle_clicks, n_clicks, data, st
         else:
             # Monthly view - Compras
             df_compras = funcion.obtener_compras_por_mes(start_date.year, start_date.month, end_date.year, end_date.month)
-            df_compras1 = funcion.obtener_compras_por_mes1(start_date.year, start_date.month, end_date.year, end_date.month)
-            df_compras = pd.concat([df_compras, df_compras1], ignore_index=True)
+            #df_compras1 = funcion.obtener_compras_por_mes1(start_date.year, start_date.month, end_date.year, end_date.month)
+            #df_compras = pd.concat([df_compras, df_compras1], ignore_index=True)
             x_column = 'Mes'
             title = f'Compras Mensuales del {start_date.strftime("%Y-%m")} al {end_date.strftime("%Y-%m")}'
             # Adjust the start_date to 1st of the month for the graph
@@ -229,8 +229,8 @@ def update_graph(daily_clicks, monthly_clicks, toggle_clicks, n_clicks, data, st
         else:
             # Crear un nuevo DataFrame con dos columnas: 'nombre' y 'cantidad'
             df_productos_vendidos = pd.DataFrame(productos_mas_vendidos, columns=['nombre', 'precio_venta','cantidad'])
-            df_productos_vendidos1 = pd.DataFrame(productos_mas_vendidos1, columns=['nombre', 'precio_venta','cantidad'])
-            df_productos_vendidos = pd.concat([df_productos_vendidos, df_productos_vendidos1], ignore_index=True)
+            #df_productos_vendidos1 = pd.DataFrame(productos_mas_vendidos1, columns=['nombre', 'precio_venta','cantidad'])
+            #df_productos_vendidos = pd.concat([df_productos_vendidos, df_productos_vendidos1], ignore_index=True)
             df_copy=df_productos_vendidos.copy()
             # Calcular el total de ventas para cada producto
             df_productos_vendidos['total'] = df_productos_vendidos['precio_venta'] * df_productos_vendidos['cantidad']
@@ -249,8 +249,8 @@ def update_graph(daily_clicks, monthly_clicks, toggle_clicks, n_clicks, data, st
         print(f"Error: {e}")
     # Actualizar la tabla de valoración de productos
     df_valoracion_actual = funcion.obtener_productos_valoracion_actual()
-    df_valoracion_actual1 = funcion.obtener_productos_valoracion_actual1()
-    df_valoracion_actual = pd.concat([df_valoracion_actual, df_valoracion_actual1], ignore_index=True)
+    #df_valoracion_actual1 = funcion.obtener_productos_valoracion_actual1()
+    #df_valoracion_actual = pd.concat([df_valoracion_actual, df_valoracion_actual1], ignore_index=True)
     # Paleta de colores personalizada con 20 colores diferentes
     custom_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
                     '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
@@ -293,8 +293,8 @@ def update_graph(daily_clicks, monthly_clicks, toggle_clicks, n_clicks, data, st
         ventas_section_style = {'display': 'none'}
         materia_prima_section_style = {'display': 'block'}
     df_usuarios_ventas = funcion.obtener_usuarios_y_ventas_top_10()
-    df_usuarios_ventas1 = funcion.obtener_usuarios_y_ventas_top_101()
-    df_usuarios_ventas = pd.concat([df_usuarios_ventas, df_usuarios_ventas1], ignore_index=True)
+    #df_usuarios_ventas1 = funcion.obtener_usuarios_y_ventas_top_101()
+    #df_usuarios_ventas = pd.concat([df_usuarios_ventas, df_usuarios_ventas1], ignore_index=True)
     # Crear el gráfico de líneas
     usuarios_grafico = go.Figure(go.Scatter(x=df_usuarios_ventas['Usuario'], y=df_usuarios_ventas['No. de Ventas'],
                                              mode='lines+markers',

@@ -6,7 +6,7 @@ import json
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 # Definimos una lista con los diferentes sites uids.
-news_sites_uids = ['user','role','user_roles','productos','proveedores','materias_primas','receta','ventas','pedidos','pedidos_productos','inventario','compras','merma']
+news_sites_uids = ['User','Role','Compras','Inventario','Materias_Primas','Merma','Pedidos','Pedidos_Productos','Productos','Proveedores','Receta','User_Roles','Ventas']
 cont=0
 # Función para actualizar el progreso en el archivo JSON
 def update_progress(progress):
