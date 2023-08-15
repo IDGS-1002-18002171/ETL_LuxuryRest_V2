@@ -1,0 +1,41 @@
+/* Ejemplo de estilos en CSS */
+.header-title {
+    font-size: 24px;
+    margin-bottom: 10px;
+    position: center;
+}
+
+.toggle-button-container {
+    margin-bottom: 20px;
+}
+
+.toggle-button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.date-picker {
+    margin-bottom: 20px;
+}
+
+.view-buttons {
+    margin-bottom: 20px;
+}
+
+.view-button {
+    background-color: #28A745;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+/* Estilo para las gráficas */
+.custom-graph {
+    width: 100%; /* Ancho de la gráfica */
+    height: 400px; /* Altura de la gráfica */
+    margin-bottom: 8px; /* Margen inferior */
+}

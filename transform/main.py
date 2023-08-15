@@ -20,11 +20,11 @@ def main(file_name):
     #Invocamos a la función para leer los datos.
     df = _read_data(file_name)
     #Invocamos a la función para extraer el newspaper uid
-    newspaper_uid = _extract_newspaper_uid(file_name)
+    """newspaper_uid = _extract_newspaper_uid(file_name)
     #Invocamos a la funcion para agregar la columna newspaper_uid al Data Frame
     df = _add_newspaper_uid_column(df, newspaper_uid)
     #Invocamos a la función para Extraer el host de las url's
-    """df = _extract_host(df)
+    df = _extract_host(df)
     #Invocamos a la función para Rellenar los títulos faltantes
     df = _fill_missing_titles(df)
     #Invocamos a la fucnión para generar los uids para las filas.
@@ -35,8 +35,6 @@ def main(file_name):
     df = _data_enrichment(df)"""
     #Invocamos a la función para eliminar registros con valores faltantes
     """df = drop_rows_with_missing_values(df) """
-    #Invocamos a la función para eliminar registros extras
-    df= df.drop('_sa_instance_state', axis=1, errors='ignore')
     #Invocamos a la función para guardar el df un archivo csv.
     _save_data_to_csv(df, file_name)
     

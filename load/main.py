@@ -1,7 +1,7 @@
 import argparse
 import logging
 import pandas as pd
-from clases import Ventas, Pedidos_Productos, Pedidos, Productos, Compras, Materias_Primas, Inventario, User, Role, Merma, Proveedores, Receta, User_Roles
+from clases import Users, Ventas, Compras, Productos, Materias_Primas
 from base import Base,engine,Session
 from datetime import datetime
 
@@ -23,162 +23,60 @@ def main(filename):
     if len(filename_parts) > 2:
         filename_masc += "_" + filename_parts[2]
     filename_masc=filename_masc.split(".")[0]
-    if filename_masc=='Role':
+    if filename_masc=='Users':
         for index, row in articles.iterrows():
-            logger.info('Cargando el role con uid: {} en la BD'.format(row['id']))
-            role=Role(row['id'],
-            row['name'],
-            row['description'],)
-            session.add(role)
-            session.commit()
-            session.close()
-    elif filename_masc=='User':
-        for index, row in articles.iterrows():
-            logger.info('Cargando el user con uid: {} en la BD'.format(row['id']))
-            # Convert the string to a datetime object
-            format_with_milliseconds = '%Y-%m-%d %H:%M:%S.%f'
-            confirmed_at = datetime.strptime(row['confirmed_at'], format_with_milliseconds)
-            user = User(row['id'],
-                        row['name'],
-                        row['email'],
-                        row['password'],
-                        row['active'],
-                        confirmed_at)  # Utiliza el objeto datetime aquí
-            session.add(user)
-            session.commit()
-            session.close()
-    elif filename_masc=='User_Roles':
-        for index, row in articles.iterrows():
-            logger.info('Cargando el user_role con uid: {} en la BD'.format(row['userId']))
-            user_roles = User_Roles(
-                        row['userId'],
-                        row['roleId'])  
-            session.add(user_roles)
+            logger.info('Cargando al usuario {} en la BD'.format(row['usuario']))
+            users = Users(row['usuario'],
+                        row['cantidad_ventas'],)  
+            session.add(users)
             session.commit()
             session.close()
     elif filename_masc=='Productos':
         for index, row in articles.iterrows():
-            logger.info('Cargando el producto con uid: {} en la BD'.format(row['id_producto']))
+            logger.info('Cargando el producto {} en la BD'.format(row['producto']))
             producto = Productos(
-                        row['nombre'],
-                        row['descripcion'],
-                        row['precio_venta'],
+                        row['producto'],
                         row['cantidad_disponible'],
-                        row['valoracionT'],
-                        row['valoracionC'],
-                        row['estatus'],
-                        row['imagen'],)  
+                        row['valoracion'],)  
             session.add(producto)
-            session.commit()
-            session.close()
-    elif filename_masc=='Proveedores':
-        for index, row in articles.iterrows():
-            logger.info('Cargando el proveedor con uid: {} en la BD'.format(row['id_proveedor']))
-            proveedor = Proveedores(
-                        row['nombre_empresa'],
-                        row['nombre_contacto'],
-                        row['correo_electronico'],
-                        row['telefono'],
-                        row['direccion'],
-                        row['Activo'],)  
-            session.add(proveedor)
             session.commit()
             session.close()
     elif filename_masc=='Materias_Primas':
         for index, row in articles.iterrows():
-            logger.info('Cargando la materia_prima con uid: {} en la BD'.format(row['id_materia_prima']))
+            logger.info('Cargando la materia_prima {} en la BD'.format(row['materia_prima']))
             materia_prima = Materias_Primas(
-                        row['id_proveedor'],
-                        row['nombre'],
+                        row['materia_prima'],
                         row['unidad_medida'],
                         row['cantidad_minima_requerida'],
-                        row['precio_compra'],
-                        row['Activo'],)  
+                        row['cantidad_en_inventario'],)  
             session.add(materia_prima)
-            session.commit()
-            session.close()
-    elif filename_masc=='Receta':
-        for index, row in articles.iterrows():
-            logger.info('Cargando la receta con uid: {} en la BD'.format(row['id_receta']))
-            receta = Receta(
-                        row['id_materia_prima'],
-                        row['id_producto'],
-                        row['cantidad_requerida'])  
-            session.add(receta)
             session.commit()
             session.close()
     elif filename_masc=='Ventas':
         for index, row in articles.iterrows():
-            logger.info('Cargando la venta con uid: {} en la BD'.format(row['id_venta']))
+            logger.info('Cargando la venta de la fecha {} en la BD'.format(row['fecha']))
             # Convierte la cadena a un objeto datetime antes de insertarlo en la BD
-            fecha_hora_venta = datetime.strptime(row['fecha_hora_venta'], '%Y-%m-%d %H:%M:%S')
+            format_with_milliseconds = '%Y-%m-%d'
+            fecha_registro = datetime.strptime(row['fecha'], format_with_milliseconds)
             venta = Ventas(
-                        row['id_usuario'],
-                        row['precio_total'],
-                        fecha_hora_venta)  
+                        row['producto'],
+                        fecha_registro,
+                        row['cantidad_vendida'],
+                        row['precio_venta'],
+                        row['total_venta'],)  
             session.add(venta)
-            session.commit()
-            session.close()
-    elif filename_masc=='Pedidos':
-        for index, row in articles.iterrows():
-            logger.info('Cargando el pedido con uid: {} en la BD'.format(row['id_pedido']))
-            # Convierte la cadena a un objeto datetime antes de insertarlo en la BD
-            fecha_hora_pedido = datetime.strptime(row['fecha_hora_pedido'], '%Y-%m-%d %H:%M:%S')
-            fecha_hora_entrega = datetime.strptime(row['fecha_hora_entrega'], '%Y-%m-%d %H:%M:%S')
-            pedido = Pedidos(
-                        row['id_usuario'],
-                        row['estado_pedido'],
-                        fecha_hora_pedido,
-                        row['domicilio'],
-                        row['empleado'],
-                        fecha_hora_entrega)  
-            session.add(pedido)
-            session.commit()
-            session.close()
-    elif filename_masc=='Pedidos_Productos':
-        for index, row in articles.iterrows():
-            logger.info('Cargando el pedido_productos con uid: {} en la BD'.format(row['id_pedido']))
-            Pedido_Producto = Pedidos_Productos(
-                        row['id_pedido'],
-                        row['id_producto'],
-                        row['cantidad'],)  
-            session.add(Pedido_Producto)
-            session.commit()
-            session.close()
-    elif filename_masc=='Inventario':
-        for index, row in articles.iterrows():
-            logger.info('Cargando el inventario con uid: {} en la BD'.format(row['id_inventario']))
-            inventario = Inventario(
-                        row['id_materia_prima'],
-                        row['cantidad_almacenada'],)  
-            session.add(inventario)
             session.commit()
             session.close()
     elif filename_masc=='Compras':
         for index, row in articles.iterrows():
-            logger.info('Cargando la compras con uid: {} en la BD'.format(row['id_compra']))
-            # Convierte la cadena a un objeto datetime antes de insertarlo en la BD
-            fecha_compra = datetime.strptime(row['fecha_compra'], '%Y-%m-%d %H:%M:%S')
-            compra = Compras(
-                        row['id_usuario'],
-                        row['id_materia_prima'],
-                        row['cantidad_comprada'],
-                        fecha_compra)  
-            session.add(compra)
-            session.commit()
-            session.close()
-    elif filename_masc=='Merma':
-        for index, row in articles.iterrows():
-            logger.info('Cargando la merma con uid: {} en la BD'.format(row['id_Merma']))
+            logger.info('Cargando las compras de la fecha {} en la BD'.format(row['fecha']))
             # Convierte la cadena a un objeto datetime antes de insertarlo en la BD
             format_with_milliseconds = '%Y-%m-%d'
-            fecha_registro = datetime.strptime(row['fecha_registro'], format_with_milliseconds)
-            merma = Merma(
-                        row['id_producto'],
-                        row['cantidad_perdida'],
+            fecha_registro = datetime.strptime(row['fecha'], format_with_milliseconds)
+            compra = Compras(
                         fecha_registro,
-                        row['descripcion'],)  
-            session.add(merma)
+                        row['total_compras'],)  
+            session.add(compra)
             session.commit()
             session.close()
     

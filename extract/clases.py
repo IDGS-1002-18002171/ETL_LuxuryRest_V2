@@ -154,7 +154,7 @@ class Ventas(Base):
     # Definicion de Columnas
     id_venta = Column(Integer, primary_key=True)
     id_usuario = Column(Integer, ForeignKey('User.id'), nullable=False)
-    precio_total = Column(Float, nullable=False)
+    precio_total = Column(DECIMAL(10, 2), nullable=False)
     fecha_hora_venta = Column(DateTime, nullable=False)
 
     # Definimos la relación con la tabla User
